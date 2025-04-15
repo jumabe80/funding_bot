@@ -37,6 +37,7 @@ def scan_all_exchanges():
     # CoinGlass (sin volumen, solo filtro por funding)
     try:
         coinglass_results = get_coinglass_funding_rates()
+        print(f"[DEBUG] CoinGlass raw total tokens: {len(coinglass_results)}")
         filtered_coinglass = [pair for pair in coinglass_results if pair["funding_rate"] >= FUNDING_RATE_THRESHOLD]
         print(f"[CoinGlass] Pares filtrados: {len(filtered_coinglass)}")
         all_results.extend(filtered_coinglass)
