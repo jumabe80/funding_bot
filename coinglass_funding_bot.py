@@ -10,6 +10,8 @@ def get_coinglass_funding_rates():
     try:
         response = requests.get(url, headers=headers, timeout=10)
         data = response.json()
+        print(f"[CoinGlass] Total activos recibidos: {len(data.get('data', {}))}")
+
         result = []
 
         if "data" not in data:
