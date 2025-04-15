@@ -7,7 +7,7 @@
 # oportunidades en una sola vista.
 # --------------------------------------
 
-from binance import get_binance_funding_rates
+from binance_funding_bot import get_binance_funding_rates
 from coinglass_funding_bot import get_coinglass_funding_rates
 # from bybit import get_bybit_funding_rates  # (Aún no disponible)
 
