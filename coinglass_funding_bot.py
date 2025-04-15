@@ -11,6 +11,9 @@ def get_coinglass_funding_rates():
         response = requests.get(url, headers=headers, timeout=10)
         data = response.json()
         print(f"[CoinGlass] Total activos recibidos: {len(data.get('data', {}))}")
+        print(f"[CoinGlass DEBUG] Status code: {response.status_code}")
+        print(f"[CoinGlass DEBUG] Raw response: {response.text[:500]}")  # imprimimos los primeros 500 caracteres
+
 
         result = []
 
