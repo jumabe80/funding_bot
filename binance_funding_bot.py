@@ -1,36 +1,47 @@
 import requests
+import time
 
 def get_binance_funding_rates():
-    # Obtener funding rates
-    funding_url = "https://fapi.binance.com/fapi/v1/premiumIndex"
-    funding_response = requests.get(funding_url)
-    funding_data = funding_response.json()
+    url_funding = "https://fapi.binance.com/fapi/v1/premiumIndex"
+    url_volume = "https://fapi.binance.com/fapi/v1/ticker/24hr"
+    url_info = "https://fapi.binance.com/fapi/v1/exchangeInfo"
 
-    # Obtener volumen 24h
-    volume_url = "https://fapi.binance.com/fapi/v1/ticker/24hr"
-    volume_response = requests.get(volume_url)
-    volume_data = volume_response.json()
+    try:
+        funding_data = requests.get(url_funding, timeout=10).json()
+        volume_data = requests.get(url_volume, timeout=10).json()
+        info_data = requests.get(url_info, timeout=10).json()
 
-    # Crear diccionario {"BTCUSDT": volumen_24h_en_USDT}
-    volume_map = {
-        item["symbol"]: float(item["quoteVolume"])
-        for item in volume_data
-        if item["symbol"].endswith("USDT")
-    }
+        volume_map = {
+            item["symbol"]: float(item.get("quoteVolume", 0))
+            for item in volume_data if item.get("quoteVolume") is not None
+        }
 
-    results = []
-    for item in funding_data:
-        symbol = item.get("symbol", "")
-        if symbol.endswith("USDT") and item.get("lastFundingRate") is not None:
-            funding_rate = float(item["lastFundingRate"])
-            volume_24h = volume_map.get(symbol, 0)
+        contract_type_map = {
+            item["symbol"]: item.get("contractType", "")
+            for item in info_data.get("symbols", [])
+        }
 
-            results.append({
-                "exchange": "Binance",
-                "symbol": symbol,
-                "funding_rate": funding_rate,
-                "volume_24h": volume_24h,
-                "timestamp": int(item["time"])
-            })
+        now = int(time.time() * 1000)
+        result = []
 
-    return results
+        for item in funding_data:
+            symbol = item.get("symbol", "")
+            if item.get("lastFundingRate") is not None:
+                funding_rate = float(item["lastFundingRate"])
+                volume_24h = volume_map.get(symbol, 0.0)
+                contract_type = contract_type_map.get(symbol, "")
+
+                result.append({
+                    "exchange": "Binance",
+                    "symbol": symbol,
+                    "funding_rate": funding_rate,
+                    "volume_24h": volume_24h,
+                    "timestamp": int(item["time"]),
+                    "contract_type": contract_type
+                })
+
+        return result
+
+    except Exception as e:
+        print(f"[ERROR Binance] {e}")
+        return []
