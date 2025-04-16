@@ -1,5 +1,6 @@
 # funding_scanner.py
 from binance_funding_bot import get_binance_funding_rates
+from bybit_funding_bot import get_bybit_funding_rates
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def scan_all_exchanges():
@@ -19,6 +20,19 @@ def scan_all_exchanges():
         all_results.extend(filtered_binance)
     except Exception as e:
         print(f"[ERROR] Binance: {e}")
+
+    print("------------------------------")
+
+    try:
+        bybit_results = get_bybit_funding_rates()
+        filtered_bybit = [
+            pair for pair in bybit_results
+            if pair["funding_rate"] >= FUNDING_RATE_THRESHOLD and pair["volume_24h"] >= VOLUME_24H_THRESHOLD
+        ]
+        print(f"[Bybit] Pares filtrados: {len(filtered_bybit)}")
+        all_results.extend(filtered_bybit)
+    except Exception as e:
+        print(f"[ERROR] Bybit: {e}")
 
     print("==============================")
     return all_results
