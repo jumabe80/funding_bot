@@ -1,6 +1,7 @@
 # funding_scanner.py
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
+from okx_funding_bot import get_okx_funding_rates
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def scan_all_exchanges():
@@ -33,6 +34,19 @@ def scan_all_exchanges():
         all_results.extend(filtered_bybit)
     except Exception as e:
         print(f"[ERROR] Bybit: {e}")
+
+    print("------------------------------")
+
+    try:
+        okx_results = get_okx_funding_rates()
+        filtered_okx = [
+            pair for pair in okx_results
+            if pair["funding_rate"] >= FUNDING_RATE_THRESHOLD and pair["volume_24h"] >= VOLUME_24H_THRESHOLD
+        ]
+        print(f"[OKX] Pares filtrados: {len(filtered_okx)}")
+        all_results.extend(filtered_okx)
+    except Exception as e:
+        print(f"[ERROR] OKX: {e}")
 
     print("==============================")
     return all_results
