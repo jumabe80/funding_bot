@@ -2,12 +2,13 @@
 
 ## Técnicas
 - [ ] Ampliar escaneo a todos los pares PERP, no solo USDT
-- [ ] Añadir integración con Bybit y OKX
 - [ ] Añadir integración con coinglass (pago)
 - [ ] Implementar filtros adicionales por open interest
 - [ ] Enviar alertas si se detecta oportunidad
 - [ ] Seguimiento de no rentabilidad del par
 - [ ] Apertura y cierre del trade
+- [ ] Comprobar que realmente está obteniendo los pares y filtrando de los Exchanges
+
 
 
 ## Lógica del bot
