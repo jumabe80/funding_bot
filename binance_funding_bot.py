@@ -5,23 +5,25 @@ from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_binance_funding_rates():
     base_url = "https://fapi.binance.com"
-    funding_url = f"{base_url}/fapi/v1/fundingRate"
+    funding_url = f"{base_url}/fapi/v1/premiumIndex"
     tickers_url = f"{base_url}/fapi/v1/ticker/24hr"
 
     try:
+        # Get volume data
         tickers_response = requests.get(tickers_url, timeout=10)
         volume_data = tickers_response.json()
 
+        # Get funding rate data
         funding_response = requests.get(funding_url, timeout=10)
         funding_data = funding_response.json()
 
+        # Build a volume map
         volume_map = {
             item["symbol"]: float(item["quoteVolume"])
             for item in volume_data
             if "symbol" in item and "quoteVolume" in item
         }
 
-        now = int(time.time() * 1000)
         results = []
 
         for item in funding_data:
@@ -29,7 +31,7 @@ def get_binance_funding_rates():
             if not symbol:
                 continue
 
-            funding_rate = float(item.get("fundingRate", 0))
+            funding_rate = float(item.get("lastFundingRate", 0))
             volume_24h = volume_map.get(symbol, 0)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_24h >= VOLUME_24H_THRESHOLD:
@@ -38,7 +40,6 @@ def get_binance_funding_rates():
                     "symbol": symbol,
                     "funding_rate": funding_rate,
                     "volume_24h": volume_24h,
-                    "timestamp": now,
                     "contract_type": "PERPETUAL"
                 })
 
