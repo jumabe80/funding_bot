@@ -1,40 +1,45 @@
-# bybit_funding_bot.py
+# okx_funding_bot.py
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
-def get_bybit_funding_rates():
-    base_url = "https://api.bybit.com"
-    tickers_url = f"{base_url}/v5/market/tickers?category=linear"
-    funding_url = f"{base_url}/v5/market/funding/prev-funding-rate"
+def get_okx_funding_rates():
+    base_url = "https://www.okx.com"
+    tickers_url = f"{base_url}/api/v5/market/tickers?instType=SWAP"
+    funding_url = f"{base_url}/api/v5/public/funding-rate"
 
     try:
         tickers_response = requests.get(tickers_url, timeout=10)
-        tickers_data = tickers_response.json().get("result", {}).get("list", [])
+        tickers_data = tickers_response.json().get("data", [])
         now = int(time.time() * 1000)
         results = []
 
         for ticker in tickers_data:
-            symbol = ticker.get("symbol")
-            quote_volume = float(ticker.get("turnover24h", 0))
+            inst_id = ticker.get("instId")
+            quote_volume = ticker.get("quoteVol24h")
 
+            if quote_volume is None:
+                continue
+
+            quote_volume = float(quote_volume)
             if quote_volume < VOLUME_24H_THRESHOLD:
                 continue
 
-            funding_resp = requests.get(f"{funding_url}?symbol={symbol}", timeout=10)
+            funding_resp = requests.get(f"{funding_url}?instId={inst_id}", timeout=10)
             if funding_resp.status_code != 200:
                 continue
 
             funding_json = funding_resp.json()
-            if funding_json.get("retCode") != 0 or not funding_json.get("result"):
+            if funding_json.get("code") != "0" or not funding_json.get("data"):
                 continue
 
-            funding_rate = float(funding_json.get("result", {}).get("fundingRate", 0))
+            funding_data = funding_json.get("data", [{}])[0]
+            funding_rate = float(funding_data.get("fundingRate", 0))
 
             if funding_rate >= FUNDING_RATE_THRESHOLD:
                 results.append({
-                    "exchange": "Bybit",
-                    "symbol": symbol,
+                    "exchange": "OKX",
+                    "symbol": inst_id,
                     "funding_rate": funding_rate,
                     "volume_24h": quote_volume,
                     "timestamp": now,
@@ -46,5 +51,5 @@ def get_bybit_funding_rates():
         return results
 
     except Exception as e:
-        print(f"[ERROR Bybit] {e}")
+        print(f"[ERROR OKX] {e}")
         return []
