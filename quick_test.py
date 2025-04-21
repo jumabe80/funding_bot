@@ -10,36 +10,66 @@ def quick_test_bybit_okx():
 
     # BYBIT
     try:
-        tickers = requests.get("https://api.bybit.com/v5/market/tickers?category=linear", timeout=10).json()
-        symbols = [item["symbol"] for item in tickers.get("result", {}).get("list", [])]
-        for symbol in symbols[:10]:  # Limit to 10 to avoid rate limits
-            funding = requests.get(f"https://api.bybit.com/v5/market/funding/prev-funding-rate?symbol={symbol}", timeout=10).json()
-            if funding.get("retCode") != 0 or not funding.get("result"):
+        tickers_response = requests.get("https://api.bybit.com/v5/market/tickers?category=linear", timeout=10)
+        tickers_data = tickers_response.json().get("result", {}).get("list", [])
+        now = int(time.time() * 1000)
+
+        for ticker in tickers_data:
+            symbol = ticker.get("symbol")
+            turnover = float(ticker.get("turnover24h", 0))
+
+            if turnover < VOLUME_24H_THRESHOLD:
                 continue
-            funding_rate = float(funding.get("result", {}).get("fundingRate", 0))
-            turnover = float(next((item.get("turnover24h", 0) for item in tickers.get("result", {}).get("list", []) if item["symbol"] == symbol), 0))
-            if funding_rate >= FUNDING_RATE_THRESHOLD and turnover >= VOLUME_24H_THRESHOLD:
+
+            funding_response = requests.get(f"https://api.bybit.com/v5/market/funding/prev-funding-rate?symbol={symbol}", timeout=10)
+            if funding_response.status_code != 200:
+                continue
+
+            funding_json = funding_response.json()
+            if funding_json.get("retCode") != 0 or not funding_json.get("result"):
+                continue
+
+            funding_rate = float(funding_json.get("result", {}).get("fundingRate", 0))
+
+            if funding_rate >= FUNDING_RATE_THRESHOLD:
                 results["Bybit"] += 1
-            time.sleep(0.2)
+
+            time.sleep(0.25)
     except Exception as e:
         results["Bybit"] = f"Error: {e}"
 
     # OKX
     try:
-        tickers = requests.get("https://www.okx.com/api/v5/market/tickers?instType=SWAP", timeout=10).json()
-        symbols = [item["instId"] for item in tickers.get("data", [])]
-        for symbol in symbols[:10]:  # Limit to 10
-            funding = requests.get(f"https://www.okx.com/api/v5/public/funding-rate?instId={symbol}", timeout=10).json()
-            if funding.get("code") != "0" or not funding.get("data"):
-                continue
-            funding_rate = float(funding.get("data", [{}])[0].get("fundingRate", 0))
-            quote_volume_raw = next((item.get("quoteVol24h") for item in tickers.get("data", []) if item["instId"] == symbol), None)
+        tickers_response = requests.get("https://www.okx.com/api/v5/market/tickers?instType=SWAP", timeout=10)
+        tickers_data = tickers_response.json().get("data", [])
+        now = int(time.time() * 1000)
+
+        for ticker in tickers_data:
+            inst_id = ticker.get("instId")
+            quote_volume_raw = ticker.get("quoteVol24h")
+
             if quote_volume_raw is None:
                 continue
+
             quote_volume = float(quote_volume_raw)
-            if funding_rate >= FUNDING_RATE_THRESHOLD and quote_volume >= VOLUME_24H_THRESHOLD:
+            if quote_volume < VOLUME_24H_THRESHOLD:
+                continue
+
+            funding_response = requests.get(f"https://www.okx.com/api/v5/public/funding-rate?instId={inst_id}", timeout=10)
+            if funding_response.status_code != 200:
+                continue
+
+            funding_json = funding_response.json()
+            if funding_json.get("code") != "0" or not funding_json.get("data"):
+                continue
+
+            funding_data = funding_json.get("data", [{}])[0]
+            funding_rate = float(funding_data.get("fundingRate", 0))
+
+            if funding_rate >= FUNDING_RATE_THRESHOLD:
                 results["OKX"] += 1
-            time.sleep(0.2)
+
+            time.sleep(0.25)
     except Exception as e:
         results["OKX"] = f"Error: {e}"
 
