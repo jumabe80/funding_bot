@@ -25,11 +25,11 @@ def get_bybit_funding_rates():
             if funding_resp.status_code != 200:
                 continue
 
-            funding_data = funding_resp.json().get("result", {})
-            if not funding_data:
+            funding_json = funding_resp.json()
+            if funding_json.get("retCode") != 0 or not funding_json.get("result"):
                 continue
 
-            funding_rate = float(funding_data.get("fundingRate", 0))
+            funding_rate = float(funding_json.get("result", {}).get("fundingRate", 0))
 
             if funding_rate >= FUNDING_RATE_THRESHOLD:
                 results.append({
