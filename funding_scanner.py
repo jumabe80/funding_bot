@@ -1,67 +1,51 @@
 # funding_scanner.py
+import time
+import datetime
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
 from okx_funding_bot import get_okx_funding_rates
-from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
-def scan_all_exchanges():
-    print("\n==============================")
+def minutes_until_funding(next_funding_timestamp_ms):
+    now = int(time.time() * 1000)
+    delta_ms = next_funding_timestamp_ms - now
+    minutes_left = max(0, int(delta_ms / 60000))
+    return minutes_left
+
+def main():
+    print("==============================")
     print("Iniciando escaneo de exchanges...")
-    print("==============================\n")
+    print("==============================")
 
     all_results = []
 
-    try:
-        binance_results = get_binance_funding_rates()
-        filtered_binance = [
-            pair for pair in binance_results
-            if pair["funding_rate"] >= FUNDING_RATE_THRESHOLD and pair["volume_24h"] >= VOLUME_24H_THRESHOLD
-        ]
-        print(f"[Binance] Pares filtrados: {len(filtered_binance)}")
-        all_results.extend(filtered_binance)
-    except Exception as e:
-        print(f"[ERROR] Binance: {e}")
+    # Binance
+    binance_data = get_binance_funding_rates()
+    print(f"[Binance] Pares filtrados: {len(binance_data)}")
+    all_results.extend(binance_data)
 
-    print("------------------------------")
+    # Bybit
+    bybit_data = get_bybit_funding_rates()
+    print(f"[Bybit] Pares filtrados: {len(bybit_data)}")
+    all_results.extend(bybit_data)
 
-    try:
-        bybit_results = get_bybit_funding_rates()
-        filtered_bybit = [
-            pair for pair in bybit_results
-            if pair["funding_rate"] >= FUNDING_RATE_THRESHOLD and pair["volume_24h"] >= VOLUME_24H_THRESHOLD
-        ]
-        print(f"[Bybit] Pares filtrados: {len(filtered_bybit)}")
-        all_results.extend(filtered_bybit)
-    except Exception as e:
-        print(f"[ERROR] Bybit: {e}")
-
-    print("------------------------------")
-
-    try:
-        okx_results = get_okx_funding_rates()
-        filtered_okx = [
-            pair for pair in okx_results
-            if pair["funding_rate"] >= FUNDING_RATE_THRESHOLD and pair["volume_24h"] >= VOLUME_24H_THRESHOLD
-        ]
-        print(f"[OKX] Pares filtrados: {len(filtered_okx)}")
-        all_results.extend(filtered_okx)
-    except Exception as e:
-        print(f"[ERROR] OKX: {e}")
+    # OKX
+    okx_data = get_okx_funding_rates()
+    print(f"[OKX] Pares filtrados: {len(okx_data)}")
+    all_results.extend(okx_data)
 
     print("==============================")
-    return all_results
+    print("\n✅ Oportunidades encontradas:")
+    print("------------------------------")
+
+    if all_results:
+        for entry in all_results:
+            minutes_left = minutes_until_funding(entry.get("next_funding_time", int(time.time() * 1000)))
+            print(f"[{entry['exchange']}] {entry['symbol']}: {entry['funding_rate']*100:.4f}% | Volumen 24h: ${entry['volume_24h']:,} | Tipo: {entry['contract_type']} | Funding in {minutes_left} minutes")
+            print("------------------------------")
+    else:
+        print("NO PAIR FOUND")
+
+    print(f"Total oportunidades: {len(all_results)}")
 
 if __name__ == "__main__":
-    results = scan_all_exchanges()
-
-    if not results:
-        print("\n❌ NO PAIR FOUND across all exchanges")
-    else:
-        print("\n✅ Oportunidades encontradas:")
-        print("------------------------------")
-        for fr in sorted(results, key=lambda x: x['funding_rate'], reverse=True):
-            volumen = f"${fr['volume_24h']:,.0f}" if fr['volume_24h'] > 0 else "(sin volumen)"
-            tipo = f"| Tipo: {fr.get('contract_type', 'N/A')}"
-            print(f"[{fr['exchange']}] {fr['symbol']}: {fr['funding_rate']*100:.4f}% | Volumen 24h: {volumen} {tipo}")
-        print("------------------------------")
-        print(f"Total oportunidades: {len(results)}")
+    main()
