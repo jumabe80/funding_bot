@@ -1,46 +1,55 @@
+# binance_funding_bot.py
 import requests
 import time
+from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_binance_funding_rates():
-    url_funding = "https://fapi.binance.com/fapi/v1/premiumIndex"
-    url_volume = "https://fapi.binance.com/fapi/v1/ticker/24hr"
-    url_info = "https://fapi.binance.com/fapi/v1/exchangeInfo"
+    base_url = "https://fapi.binance.com"
+    funding_url = f"{base_url}/fapi/v1/fundingRate"
+    tickers_url = f"{base_url}/fapi/v1/ticker/24hr"
 
     try:
-        funding_data = requests.get(url_funding, timeout=10).json()
-        volume_data = requests.get(url_volume, timeout=10).json()
-        info_data = requests.get(url_info, timeout=10).json()
+        # Get volume information
+        tickers_response = requests.get(tickers_url, timeout=10)
+        volume_data = tickers_response.json()
 
+        # Get funding rates information
+        funding_response = requests.get(funding_url, timeout=10)
+        funding_data = funding_response.json()
+
+        # Map volumes by symbol
         volume_map = {
-            item["symbol"]: float(item.get("quoteVolume", 0))
-            for item in volume_data if item.get("quoteVolume") is not None
-        }
-
-        contract_type_map = {
-            item["symbol"]: item.get("contractType", "")
-            for item in info_data.get("symbols", [])
+            item["symbol"]: float(item["quoteVolume"])
+            for item in volume_data
+            if "symbol" in item and "quoteVolume" in item
         }
 
         now = int(time.time() * 1000)
-        result = []
+        results = []
 
         for item in funding_data:
             symbol = item.get("symbol", "")
-            if item.get("lastFundingRate") is not None:
-                funding_rate = float(item["lastFundingRate"])
-                volume_24h = volume_map.get(symbol, 0.0)
-                contract_type = contract_type_map.get(symbol, "")
+            if not symbol:
+                continue
 
-                result.append({
+            funding_rate = float(item.get("fundingRate", 0))
+            next_funding_time = int(item.get("fundingTime", now))
+            volume_24h = volume_map.get(symbol, 0)
+
+            if funding_rate >= FUNDING_RATE_THRESHOLD and volume_24h >= VOLUME_24H_THRESHOLD:
+                results.append({
                     "exchange": "Binance",
                     "symbol": symbol,
                     "funding_rate": funding_rate,
                     "volume_24h": volume_24h,
-                    "timestamp": int(item["time"]),
-                    "contract_type": contract_type
+                    "timestamp": now,
+                    "next_funding_time": next_funding_time,
+                    "contract_type": "PERPETUAL"
                 })
 
-        return result
+            time.sleep(0.05)  # small delay for stability
+
+        return results
 
     except Exception as e:
         print(f"[ERROR Binance] {e}")
