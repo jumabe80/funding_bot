@@ -1,15 +1,8 @@
 # funding_scanner.py
 import time
-import datetime
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
 from okx_funding_bot import get_okx_funding_rates
-
-def minutes_until_funding(next_funding_timestamp_ms):
-    now = int(time.time() * 1000)
-    delta_ms = next_funding_timestamp_ms - now
-    minutes_left = max(0, int(delta_ms / 60000))
-    return minutes_left
 
 def main():
     print("==============================")
@@ -39,8 +32,7 @@ def main():
 
     if all_results:
         for entry in all_results:
-            minutes_left = minutes_until_funding(entry.get("next_funding_time", int(time.time() * 1000)))
-            print(f"[{entry['exchange']}] {entry['symbol']}: {entry['funding_rate']*100:.4f}% | Volumen 24h: ${entry['volume_24h']:,} | Tipo: {entry['contract_type']} | Funding in {minutes_left} minutes")
+            print(f"[{entry['exchange']}] {entry['symbol']}: {entry['funding_rate']*100:.4f}% | Volumen 24h: ${entry['volume_24h']:,} | Tipo: {entry['contract_type']}")
             print("------------------------------")
     else:
         print("NO PAIR FOUND")
