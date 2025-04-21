@@ -17,7 +17,6 @@ def get_binance_funding_rates():
         funding_response = requests.get(funding_url, timeout=10)
         funding_data = funding_response.json()
 
-        # Map volumes by symbol
         volume_map = {
             item["symbol"]: float(item["quoteVolume"])
             for item in volume_data
@@ -33,7 +32,6 @@ def get_binance_funding_rates():
                 continue
 
             funding_rate = float(item.get("fundingRate", 0))
-            next_funding_time = int(item.get("fundingTime", now))
             volume_24h = volume_map.get(symbol, 0)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_24h >= VOLUME_24H_THRESHOLD:
@@ -43,11 +41,10 @@ def get_binance_funding_rates():
                     "funding_rate": funding_rate,
                     "volume_24h": volume_24h,
                     "timestamp": now,
-                    "next_funding_time": next_funding_time,
                     "contract_type": "PERPETUAL"
                 })
 
-            time.sleep(0.05)  # small delay for stability
+            time.sleep(0.05)
 
         return results
 
