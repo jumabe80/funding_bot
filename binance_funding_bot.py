@@ -9,11 +9,9 @@ def get_binance_funding_rates():
     tickers_url = f"{base_url}/fapi/v1/ticker/24hr"
 
     try:
-        # Get volume information
         tickers_response = requests.get(tickers_url, timeout=10)
         volume_data = tickers_response.json()
 
-        # Get funding rates information
         funding_response = requests.get(funding_url, timeout=10)
         funding_data = funding_response.json()
 
