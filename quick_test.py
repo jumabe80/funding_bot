@@ -13,8 +13,11 @@ def quick_test_bybit_okx():
         tickers_response = requests.get("https://api.bybit.com/v5/market/tickers?category=linear", timeout=10)
         tickers_data = tickers_response.json().get("result", {}).get("list", [])
         now = int(time.time() * 1000)
+        print(tickers_response.json())
 
         print("\n[BYBIT DEBUG] Showing funding and volume for each pair:")
+    
+
         for ticker in tickers_data:
             symbol = ticker.get("symbol")
             turnover = float(ticker.get("turnover24h", 0))
@@ -45,6 +48,7 @@ def quick_test_bybit_okx():
         tickers_response = requests.get("https://www.okx.com/api/v5/market/tickers?instType=SWAP", timeout=10)
         tickers_data = tickers_response.json().get("data", [])
         now = int(time.time() * 1000)
+        print(tickers_response.json())
 
         print("\n[OKX DEBUG] Showing funding and volume for each pair:")
         for ticker in tickers_data:
