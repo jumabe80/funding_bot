@@ -1,50 +1,34 @@
-# bybit_funding_bot.py
+# bybit_funding_bot.py (UPDATED)
 import requests
-import time
+
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_bybit_funding_rates():
-    base_url = "https://api.bybit.com"
-    tickers_url = f"{base_url}/v5/market/tickers?category=linear"
-    funding_url = f"{base_url}/v5/market/funding/prev-funding-rate"
+    url = "https://api.bybit.com/v5/market/tickers?category=linear"
+    response = requests.get(url, timeout=10)
+    data = response.json()
 
-    try:
-        tickers_response = requests.get(tickers_url, timeout=10)
-        tickers_data = tickers_response.json().get("result", {}).get("list", [])
-        now = int(time.time() * 1000)
-        results = []
+    funding_data = data.get("result", {}).get("list", [])
 
-        for ticker in tickers_data:
-            symbol = ticker.get("symbol")
-            quote_volume = float(ticker.get("turnover24h", 0))
+    results = []
 
-            if quote_volume < VOLUME_24H_THRESHOLD:
-                continue
+    for item in funding_data:
+        symbol = item.get("symbol", "")
+        funding_rate = float(item.get("fundingRate", 0))
+        volume_24h = float(item.get("turnover24h", 0))
 
-            funding_resp = requests.get(f"{funding_url}?symbol={symbol}", timeout=10)
-            if funding_resp.status_code != 200:
-                continue
+        if funding_rate >= FUNDING_RATE_THRESHOLD and volume_24h >= VOLUME_24H_THRESHOLD:
+            results.append({
+                "exchange": "Bybit",
+                "symbol": symbol,
+                "funding_rate": funding_rate,
+                "volume_24h": volume_24h,
+                "timestamp": None  # Bybit doesn't send timestamp easily
+            })
 
-            funding_json = funding_resp.json()
-            if funding_json.get("retCode") != 0 or not funding_json.get("result"):
-                continue
+    return results
 
-            funding_rate = float(funding_json.get("result", {}).get("fundingRate", 0))
-
-            if funding_rate >= FUNDING_RATE_THRESHOLD:
-                results.append({
-                    "exchange": "Bybit",
-                    "symbol": symbol,
-                    "funding_rate": funding_rate,
-                    "volume_24h": quote_volume,
-                    "timestamp": now,
-                    "contract_type": "PERPETUAL"
-                })
-
-            time.sleep(0.25)  # To respect rate limits
-
-        return results
-
-    except Exception as e:
-        print(f"[ERROR Bybit] {e}")
-        return []
+if __name__ == "__main__":
+    rates = get_bybit_funding_rates()
+    for r in rates:
+        print(r)
