@@ -3,7 +3,7 @@ import requests
 import time
 
 FUNDING_RATE_THRESHOLD = 0.0003  # Example 0.03%
-VOLUME_24H_THRESHOLD = 20000000   # Example $20M
+VOLUME_24H_THRESHOLD = 10000000   # Example $10M
 
 def quick_test_bybit_okx():
     results = {"Bybit": 0, "OKX": 0}
