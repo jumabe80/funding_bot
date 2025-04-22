@@ -1,4 +1,4 @@
-# bybit_funding_bot.py (UPDATED)
+# bybit_funding_bot.py (UPDATED with contract_type)
 import requests
 
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
@@ -17,7 +17,6 @@ def get_bybit_funding_rates():
         funding_rate_raw = item.get("fundingRate")
         if not funding_rate_raw:
             continue  # Skip if fundingRate is missing or empty
-        
         funding_rate = float(funding_rate_raw)
         volume_24h = float(item.get("turnover24h", 0))
 
@@ -27,7 +26,8 @@ def get_bybit_funding_rates():
                 "symbol": symbol,
                 "funding_rate": funding_rate,
                 "volume_24h": volume_24h,
-                "timestamp": None  # Bybit doesn't send timestamp easily
+                "timestamp": None,  # Bybit doesn't send timestamp easily
+                "contract_type": "PERPETUAL"  # Added for consistency
             })
 
     return results
