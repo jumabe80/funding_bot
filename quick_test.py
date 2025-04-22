@@ -1,9 +1,9 @@
-# quick_test.py
+# quick_test.py (DEBUG VERSION)
 import requests
 import time
 
 FUNDING_RATE_THRESHOLD = 0.00005  # Example 0.005%
-VOLUME_24H_THRESHOLD = 1000000   # Example $1M
+VOLUME_24H_THRESHOLD = 1000000    # Example $1M
 
 def quick_test_bybit_okx():
     results = {"Bybit": 0, "OKX": 0}
@@ -14,13 +14,12 @@ def quick_test_bybit_okx():
         tickers_data = tickers_response.json().get("result", {}).get("list", [])
         now = int(time.time() * 1000)
 
+        print("\n[BYBIT DEBUG] Showing funding and volume for each pair:")
         for ticker in tickers_data:
             symbol = ticker.get("symbol")
             turnover = float(ticker.get("turnover24h", 0))
 
-            if turnover < VOLUME_24H_THRESHOLD:
-                continue
-
+            # Fetch funding rate for this symbol
             funding_response = requests.get(f"https://api.bybit.com/v5/market/funding/prev-funding-rate?symbol={symbol}", timeout=10)
             if funding_response.status_code != 200:
                 continue
@@ -31,7 +30,10 @@ def quick_test_bybit_okx():
 
             funding_rate = float(funding_json.get("result", {}).get("fundingRate", 0))
 
-            if funding_rate >= FUNDING_RATE_THRESHOLD:
+            # DEBUG print
+            print(f"[BYBIT] {symbol} | Funding Rate: {funding_rate:.6f} | Volume 24h: ${turnover:,.2f}")
+
+            if turnover >= VOLUME_24H_THRESHOLD and funding_rate >= FUNDING_RATE_THRESHOLD:
                 results["Bybit"] += 1
 
             time.sleep(0.25)
@@ -44,6 +46,7 @@ def quick_test_bybit_okx():
         tickers_data = tickers_response.json().get("data", [])
         now = int(time.time() * 1000)
 
+        print("\n[OKX DEBUG] Showing funding and volume for each pair:")
         for ticker in tickers_data:
             inst_id = ticker.get("instId")
             quote_volume_raw = ticker.get("quoteVol24h")
@@ -52,9 +55,8 @@ def quick_test_bybit_okx():
                 continue
 
             quote_volume = float(quote_volume_raw)
-            if quote_volume < VOLUME_24H_THRESHOLD:
-                continue
 
+            # Fetch funding rate for this instrument
             funding_response = requests.get(f"https://www.okx.com/api/v5/public/funding-rate?instId={inst_id}", timeout=10)
             if funding_response.status_code != 200:
                 continue
@@ -66,7 +68,10 @@ def quick_test_bybit_okx():
             funding_data = funding_json.get("data", [{}])[0]
             funding_rate = float(funding_data.get("fundingRate", 0))
 
-            if funding_rate >= FUNDING_RATE_THRESHOLD:
+            # DEBUG print
+            print(f"[OKX] {inst_id} | Funding Rate: {funding_rate:.6f} | Volume 24h: ${quote_volume:,.2f}")
+
+            if quote_volume >= VOLUME_24H_THRESHOLD and funding_rate >= FUNDING_RATE_THRESHOLD:
                 results["OKX"] += 1
 
             time.sleep(0.25)
@@ -76,4 +81,6 @@ def quick_test_bybit_okx():
     return results
 
 if __name__ == "__main__":
+    print("\n========= QUICK TEST START =========")
     print(quick_test_bybit_okx())
+    print("========= QUICK TEST END =========\n")
