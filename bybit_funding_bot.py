@@ -14,7 +14,11 @@ def get_bybit_funding_rates():
 
     for item in funding_data:
         symbol = item.get("symbol", "")
-        funding_rate = float(item.get("fundingRate", 0))
+        funding_rate_raw = item.get("fundingRate")
+        if not funding_rate_raw:
+            continue  # Skip if fundingRate is missing or empty
+        
+        funding_rate = float(funding_rate_raw)
         volume_24h = float(item.get("turnover24h", 0))
 
         if funding_rate >= FUNDING_RATE_THRESHOLD and volume_24h >= VOLUME_24H_THRESHOLD:
