@@ -55,7 +55,11 @@ def quick_test_bybit_okx():
                 continue
 
             funding_data = funding_json.get("data", [{}])[0]
-            funding_rate = float(funding_data.get("fundingRate", 0))
+            funding_rate_raw = ticker.get("fundingRate")
+            if not funding_rate_raw:
+                continue
+            
+            funding_rate = float(funding_rate_raw)
 
             # DEBUG print
             print(f"[OKX] {inst_id} | Funding Rate: {funding_rate:.6f} | Volume 24h: ${quote_volume:,.2f}")
