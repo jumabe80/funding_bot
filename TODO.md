@@ -1,14 +1,12 @@
 # Lista de mejoras pendientes
 
 ## Técnicas
-- [ ] Ampliar escaneo a todos los pares PERP, no solo USDT
-- [ ] Añadir integración con coinglass (pago)
-- [ ] Implementar filtros adicionales por open interest
-- [ ] Enviar alertas si se detecta oportunidad
-- [ ] Seguimiento de no rentabilidad del par
-- [ ] Apertura y cierre del trade
-- [ ] Comprobar que realmente está obteniendo los pares y filtrando de los Exchanges
 
+- [ ] Implementar filtros adicionales por open interest
+- [ ] Filtros de seguridad para confianza en el trade:  Open Interest, Basis Price or Premium Index, Bid/Ask Spread, Funding Rate History, Contract Type / Listing Quality
+- [ ] Enviar alertas si se detecta oportunidad
+- [ ] Apertura y cierre del trade
+- [ ] Añadir integración con coinglass (pago)
 
 
 ## Lógica del bot
