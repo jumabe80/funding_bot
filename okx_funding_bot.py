@@ -1,6 +1,7 @@
-# okx_funding_bot.py (UPDATED WITH CORRECT VOLUME AND RATE HANDLING)
+# okx_funding_bot.py (UPDATED WITH FUNDING COUNTDOWN)
 import requests
 import time
+from datetime import datetime
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_okx_funding_rates():
@@ -33,6 +34,12 @@ def get_okx_funding_rates():
                 continue
             funding_data = funding_json["data"][0]
             funding_rate = float(funding_data.get("fundingRate", 0))
+
+            # Compute funding countdown in minutes
+            next_ts = int(funding_data.get("nextFundingTime", 0))
+            now_ts = int(time.time() * 1000)
+            minutes_until = max((next_ts - now_ts) // 60000, 0)
+
         except Exception:
             continue
 
@@ -42,7 +49,8 @@ def get_okx_funding_rates():
                 "symbol": inst_id,
                 "funding_rate": funding_rate,
                 "volume_24h": quote_volume,
-                "contract_type": "PERPETUAL"
+                "contract_type": "PERPETUAL",
+                "funding_countdown": minutes_until
             })
 
         time.sleep(0.25)
