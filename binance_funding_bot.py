@@ -52,5 +52,5 @@ def get_binance_funding_rates():
                 "funding_countdown": minutes_until
             })
 
-    print(f"[Binance] Pares filtrados: {len(results)}")
+    print(f"[Binance] Filtered pairs: {len(results)}")
     return results
