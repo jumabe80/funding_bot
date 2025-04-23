@@ -1,4 +1,4 @@
-# quick_test.py (FIXED OKX DEBUG)
+# quick_test.py (FIXED OKX VOLUME FIELD)
 import requests
 import time
 from datetime import datetime
@@ -44,7 +44,7 @@ def quick_test_bybit_okx():
         print("\n[OKX DEBUG] Showing funding and volume for each pair:")
         for ticker in tickers_data:
             inst_id = ticker.get("instId")
-            quote_volume_raw = ticker.get("quoteVol24h")
+            quote_volume_raw = ticker.get("volCcy24h")  # FIXED HERE
 
             # fallback to funding call regardless of volume
             funding_response = requests.get(f"https://www.okx.com/api/v5/public/funding-rate?instId={inst_id}", timeout=10)
