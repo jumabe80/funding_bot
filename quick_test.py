@@ -1,4 +1,4 @@
-# quick_test.py (FINAL POLISHED VERSION)
+# quick_test.py (FIXED OKX DEBUG)
 import requests
 import time
 from datetime import datetime
@@ -46,29 +46,28 @@ def quick_test_bybit_okx():
             inst_id = ticker.get("instId")
             quote_volume_raw = ticker.get("quoteVol24h")
 
-            print(f"[OKX RAW] {inst_id} | Raw Volume: {quote_volume_raw}")
-
-            if quote_volume_raw is None:
-                continue
-
-            try:
-                quote_volume = float(quote_volume_raw)
-            except ValueError:
-                continue
-
+            # fallback to funding call regardless of volume
             funding_response = requests.get(f"https://www.okx.com/api/v5/public/funding-rate?instId={inst_id}", timeout=10)
             if funding_response.status_code != 200:
+                print(f"[OKX] {inst_id} | Funding rate call failed")
                 continue
 
             funding_json = funding_response.json()
             if funding_json.get("code") != "0" or not funding_json.get("data"):
+                print(f"[OKX] {inst_id} | Funding rate not found")
                 continue
 
             funding_data = funding_json.get("data", [{}])[0]
             try:
                 funding_rate = float(funding_data.get("fundingRate", 0))
-            except ValueError:
+            except (ValueError, TypeError):
+                print(f"[OKX] {inst_id} | Invalid funding rate")
                 continue
+
+            try:
+                quote_volume = float(quote_volume_raw) if quote_volume_raw is not None else 0
+            except ValueError:
+                quote_volume = 0
 
             print(f"[OKX] {inst_id} | Funding Rate: {funding_rate:.6f} | Volume 24h: ${quote_volume:,.2f}")
 
