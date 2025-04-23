@@ -1,55 +1,51 @@
-# okx_funding_bot.py
+# okx_funding_bot.py (UPDATED WITH CORRECT VOLUME AND RATE HANDLING)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_okx_funding_rates():
-    base_url = "https://www.okx.com"
-    tickers_url = f"{base_url}/api/v5/market/tickers?instType=SWAP"
-    funding_url = f"{base_url}/api/v5/public/funding-rate"
-
+    url = "https://www.okx.com/api/v5/market/tickers?instType=SWAP"
     try:
-        tickers_response = requests.get(tickers_url, timeout=10)
+        tickers_response = requests.get(url, timeout=10)
         tickers_data = tickers_response.json().get("data", [])
-        now = int(time.time() * 1000)
-        results = []
+    except Exception as e:
+        print(f"[ERROR OKX] Failed to fetch tickers: {e}")
+        return []
 
-        for ticker in tickers_data:
-            inst_id = ticker.get("instId")
-            quote_volume = ticker.get("quoteVol24h")
+    results = []
 
-            if quote_volume is None:
+    for ticker in tickers_data:
+        inst_id = ticker.get("instId")
+        quote_volume_raw = ticker.get("volCcy24h")
+
+        try:
+            quote_volume = float(quote_volume_raw) if quote_volume_raw else 0
+        except ValueError:
+            quote_volume = 0
+
+        funding_url = f"https://www.okx.com/api/v5/public/funding-rate?instId={inst_id}"
+        try:
+            funding_response = requests.get(funding_url, timeout=10)
+            if funding_response.status_code != 200:
                 continue
-
-            quote_volume = float(quote_volume)
-            if quote_volume < VOLUME_24H_THRESHOLD:
-                continue
-
-            funding_resp = requests.get(f"{funding_url}?instId={inst_id}", timeout=10)
-            if funding_resp.status_code != 200:
-                continue
-
-            funding_json = funding_resp.json()
+            funding_json = funding_response.json()
             if funding_json.get("code") != "0" or not funding_json.get("data"):
                 continue
-
-            funding_data = funding_json.get("data", [{}])[0]
+            funding_data = funding_json["data"][0]
             funding_rate = float(funding_data.get("fundingRate", 0))
+        except Exception:
+            continue
 
-            if funding_rate >= FUNDING_RATE_THRESHOLD:
-                results.append({
-                    "exchange": "OKX",
-                    "symbol": inst_id,
-                    "funding_rate": funding_rate,
-                    "volume_24h": quote_volume,
-                    "timestamp": now,
-                    "contract_type": "PERPETUAL"
-                })
+        if quote_volume >= VOLUME_24H_THRESHOLD and funding_rate >= FUNDING_RATE_THRESHOLD:
+            results.append({
+                "exchange": "OKX",
+                "symbol": inst_id,
+                "funding_rate": funding_rate,
+                "volume_24h": quote_volume,
+                "contract_type": "PERPETUAL"
+            })
 
-            time.sleep(0.25)  # To respect rate limits
+        time.sleep(0.25)
 
-        return results
-
-    except Exception as e:
-        print(f"[ERROR OKX] {e}")
-        return []
+    print(f"[OKX] Pares filtrados: {len(results)}")
+    return results
