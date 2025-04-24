@@ -1,7 +1,8 @@
-# funding_scanner.py (UPDATED TO ORDER RESULTS BY FUNDING COUNTDOWN, THEN RATE)
+# funding_scanner.py (UPDATED TO ADD BITGET)
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
 from okx_funding_bot import get_okx_funding_rates
+from bitget_funding_bot import get_bitget_funding_rates
 from collections import defaultdict
 
 
@@ -15,10 +16,12 @@ def main():
     binance_data = get_binance_funding_rates()
     bybit_data = get_bybit_funding_rates()
     okx_data = get_okx_funding_rates()
+    bitget_data = get_bitget_funding_rates()
 
     all_results.extend(binance_data)
     all_results.extend(bybit_data)
     all_results.extend(okx_data)
+    all_results.extend(bitget_data)
 
     if not all_results:
         print("NO PAIR FOUND")
