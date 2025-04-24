@@ -1,4 +1,4 @@
-# funding_scanner.py (UPDATED TO ADD BITGET)
+# funding_scanner.py (UPDATED TO ADD BITGET & ENGLISH TRANSLATION)
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
 from okx_funding_bot import get_okx_funding_rates
@@ -8,7 +8,7 @@ from collections import defaultdict
 
 def main():
     print("=" * 30)
-    print("Iniciando escaneo de exchanges...")
+    print("Starting exchange scan...")
     print("=" * 30)
 
     all_results = []
@@ -17,6 +17,11 @@ def main():
     bybit_data = get_bybit_funding_rates()
     okx_data = get_okx_funding_rates()
     bitget_data = get_bitget_funding_rates()
+
+    print(f"[Binance] Filtered pairs: {len(binance_data)}")
+    print(f"[Bybit] Filtered pairs: {len(bybit_data)}")
+    print(f"[OKX] Filtered pairs: {len(okx_data)}")
+    print(f"[Bitget] Filtered pairs: {len(bitget_data)}")
 
     all_results.extend(binance_data)
     all_results.extend(bybit_data)
@@ -32,7 +37,7 @@ def main():
     for entry in all_results:
         grouped[entry['exchange']].append(entry)
 
-    print("\n✅ Oportunidades encontradas:")
+    print("\n✅ Opportunities found:")
     print("-" * 30)
 
     for exchange in sorted(grouped.keys()):
@@ -44,7 +49,7 @@ def main():
             countdown_display = f" | Funding in {entry['funding_countdown']} min" if 'funding_countdown' in entry and entry['funding_countdown'] is not None else ""
             print(
                 f"[{entry['exchange']}] {entry['symbol']}: {entry['funding_rate']*100:.4f}% "
-                f"| Volumen 24h: ${entry['volume_24h']:,} | Tipo: {entry['contract_type']}{countdown_display}"
+                f"| 24h Volume: ${entry['volume_24h']:,} | Type: {entry['contract_type']}{countdown_display}"
             )
             print("-" * 30)
 
