@@ -19,7 +19,12 @@ def quick_test():
             if not symbol:
                 continue
 
-            contract_id = symbol  # Keeping current approach, fallback ready
+            # Normalize symbol for KuCoin ticker API
+            if symbol.endswith('USDTM'):
+                contract_id = symbol.replace('USDTM', '-USDTM')
+            else:
+                contract_id = symbol
+
             ticker_url = f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={contract_id}"
             ticker_resp = requests.get(ticker_url, timeout=10)
             ticker_data = ticker_resp.json().get("data", {})
