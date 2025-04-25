@@ -29,8 +29,16 @@ def quick_test():
             ticker_resp = requests.get(ticker_url, timeout=10)
             ticker_data = ticker_resp.json().get("data", {})
 
+            # Retry with -USDT if -USDTM fails
+            if not ticker_data and symbol.endswith('USDTM'):
+                alt_contract_id = symbol.replace('USDTM', '-USDT')
+                ticker_url = f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={alt_contract_id}"
+                ticker_resp = requests.get(ticker_url, timeout=10)
+                ticker_data = ticker_resp.json().get("data", {})
+                contract_id = alt_contract_id  # update to fallback symbol if found
+
             if not ticker_data:
-                print(f"[KUCOIN WARNING] Empty ticker for {contract_id}, skipping.")
+                print(f"[KUCOIN WARNING] Empty ticker for {symbol} after retries, skipping.")
                 continue
 
             print(f"[KUCOIN DEBUG] Ticker for {contract_id}: {ticker_data}")
