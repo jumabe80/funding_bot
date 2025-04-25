@@ -4,7 +4,7 @@ import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def quick_test():
-    results = {"KuCoin": 0}
+    results = {"Bybit": 0, "OKX": 0, "KuCoin": 0}
 
     # KUCOIN (ACTIVE)
     try:
@@ -19,15 +19,19 @@ def quick_test():
             if not symbol:
                 continue
 
-            ticker_resp = requests.get(f"https://api.kucoin.com/api/v1/contract/market/ticker?symbol={symbol}", timeout=10)
+            ticker_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={symbol}", timeout=10)
             ticker_data = ticker_resp.json().get("data", {})
+            if not ticker_data:
+                print(f"[KUCOIN WARNING] Empty ticker for {symbol}, skipping.")
+                continue
+
             print(f"[KUCOIN DEBUG] Ticker for {symbol}: {ticker_data}")
 
             quote_volume = float(ticker_data.get("turnoverOf24h", 0))
             if quote_volume < VOLUME_24H_THRESHOLD:
                 continue
 
-            funding_resp = requests.get(f"https://api.kucoin.com/api/v1/funding-rate/{symbol}", timeout=10)
+            funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{symbol}", timeout=10)
             funding_data = funding_resp.json().get("data", {})
             print(f"[KUCOIN DEBUG] Funding rate for {symbol}: {funding_data}")
 
