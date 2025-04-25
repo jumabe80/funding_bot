@@ -19,21 +19,24 @@ def quick_test():
             if not symbol:
                 continue
 
-            ticker_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={symbol}", timeout=10)
+            contract_id = symbol  # Keeping current approach, fallback ready
+            ticker_url = f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={contract_id}"
+            ticker_resp = requests.get(ticker_url, timeout=10)
             ticker_data = ticker_resp.json().get("data", {})
+
             if not ticker_data:
-                print(f"[KUCOIN WARNING] Empty ticker for {symbol}, skipping.")
+                print(f"[KUCOIN WARNING] Empty ticker for {contract_id}, skipping.")
                 continue
 
-            print(f"[KUCOIN DEBUG] Ticker for {symbol}: {ticker_data}")
+            print(f"[KUCOIN DEBUG] Ticker for {contract_id}: {ticker_data}")
 
             quote_volume = float(ticker_data.get("turnoverOf24h", 0))
             if quote_volume < VOLUME_24H_THRESHOLD:
                 continue
 
-            funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{symbol}", timeout=10)
+            funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{contract_id}", timeout=10)
             funding_data = funding_resp.json().get("data", {})
-            print(f"[KUCOIN DEBUG] Funding rate for {symbol}: {funding_data}")
+            print(f"[KUCOIN DEBUG] Funding rate for {contract_id}: {funding_data}")
 
             funding_rate_str = funding_data.get("value")
             if funding_rate_str in [None, ""]:
