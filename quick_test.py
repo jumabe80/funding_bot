@@ -8,7 +8,7 @@ def quick_test():
 
     # KUCOIN (ACTIVE)
     try:
-        market_response = requests.get("https://api.kucoin.com/api/v1/contracts/active", timeout=10)
+        market_response = requests.get("https://api-futures.kucoin.com/api/v1/contracts/active", timeout=10)
         contracts = market_response.json().get("data", [])
 
         print("[KUCOIN DEBUG] Contracts fetched:")
