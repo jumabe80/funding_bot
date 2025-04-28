@@ -22,16 +22,20 @@ def quick_test_kucoin_sample():
 
         for contract in random_contracts:
             symbol = contract.get("symbol", "N/A")
-            mark_price = contract.get("markPrice", "N/A")
-            funding_rate_symbol = contract.get("fundingRateSymbol", "N/A")
-            open_interest = contract.get("openInterest", "N/A")
+            funding_fee_rate = contract.get("fundingFeeRate", "N/A")
+            turnover_24h = contract.get("turnoverOf24h", "N/A")
             volume_24h = contract.get("volumeOf24h", "N/A")
+            mark_price = contract.get("markPrice", "N/A")
+            open_interest = contract.get("openInterest", "N/A")
+            next_funding_time = contract.get("nextFundingRateTime", "N/A")
 
             print(f"Symbol: {symbol}")
-            print(f"Mark Price: {mark_price}")
-            print(f"Funding Rate Symbol: {funding_rate_symbol}")
-            print(f"Open Interest: {open_interest}")
+            print(f"Funding Fee Rate: {funding_fee_rate}")
+            print(f"24h Turnover: {turnover_24h}")
             print(f"24h Volume: {volume_24h}")
+            print(f"Mark Price: {mark_price}")
+            print(f"Open Interest: {open_interest}")
+            print(f"Next Funding Rate Time: {next_funding_time}")
             print("-"*80)
 
             time.sleep(0.05)  # Light delay to prevent spamming
