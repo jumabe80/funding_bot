@@ -1,7 +1,8 @@
 # quick_test.py (KUCOIN ONLY ACTIVE, OTHERS COMMENTED)
 import requests
 import time
-from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
+from settings import FUNDING_RATE_THRESHOLD
+
 
 def quick_test():
     results = {"Bybit": 0, "OKX": 0, "KuCoin": 0}
@@ -39,10 +40,6 @@ def quick_test():
             if not ticker_data:
                 continue  # NO WARNING printed anymore!
 
-            quote_volume = float(ticker_data.get("turnoverOf24h", 0))
-            if quote_volume < VOLUME_24H_THRESHOLD:
-                continue
-
             funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{contract_id}", timeout=10)
             funding_data = funding_resp.json().get("data", {})
 
@@ -66,6 +63,7 @@ def quick_test():
     print("========= QUICK TEST START =========")
     print(results)
     print("========= QUICK TEST END =========")
+
 
 if __name__ == "__main__":
     quick_test()
