@@ -37,8 +37,7 @@ def quick_test():
                 contract_id = alt_contract_id  # update to fallback symbol if found
 
             if not ticker_data:
-                print(f"[KUCOIN WARNING] No ticker data for {symbol}. Skipping.")
-                continue
+                continue  # NO WARNING printed anymore!
 
             quote_volume = float(ticker_data.get("turnoverOf24h", 0))
             if quote_volume < VOLUME_24H_THRESHOLD:
