@@ -11,8 +11,7 @@ def quick_test():
         market_response = requests.get("https://api-futures.kucoin.com/api/v1/contracts/active", timeout=10)
         contracts = market_response.json().get("data", [])
 
-        print("[KUCOIN DEBUG] Contracts fetched:")
-        print(contracts)
+        print("[KUCOIN] Contracts fetched.")
 
         for contract in contracts:
             symbol = contract.get("symbol")
@@ -38,10 +37,8 @@ def quick_test():
                 contract_id = alt_contract_id  # update to fallback symbol if found
 
             if not ticker_data:
-                print(f"[KUCOIN WARNING] Empty ticker for {symbol} after retries, skipping.")
+                print(f"[KUCOIN WARNING] No ticker data for {symbol}. Skipping.")
                 continue
-
-            print(f"[KUCOIN DEBUG] Ticker for {contract_id}: {ticker_data}")
 
             quote_volume = float(ticker_data.get("turnoverOf24h", 0))
             if quote_volume < VOLUME_24H_THRESHOLD:
@@ -49,7 +46,6 @@ def quick_test():
 
             funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{contract_id}", timeout=10)
             funding_data = funding_resp.json().get("data", {})
-            print(f"[KUCOIN DEBUG] Funding rate for {contract_id}: {funding_data}")
 
             funding_rate_str = funding_data.get("value")
             if funding_rate_str in [None, ""]:
