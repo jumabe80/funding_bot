@@ -19,28 +19,7 @@ def quick_test():
             if not symbol:
                 continue
 
-            # Normalize symbol for KuCoin ticker API
-            if symbol.endswith('USDTM'):
-                contract_id = symbol.replace('USDTM', '-USDTM')
-            else:
-                contract_id = symbol
-
-            ticker_url = f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={contract_id}"
-            ticker_resp = requests.get(ticker_url, timeout=10)
-            ticker_data = ticker_resp.json().get("data", {})
-
-            # Retry with -USDT if -USDTM fails
-            if not ticker_data and symbol.endswith('USDTM'):
-                alt_contract_id = symbol.replace('USDTM', '-USDT')
-                ticker_url = f"https://api-futures.kucoin.com/api/v1/contract/market/ticker?symbol={alt_contract_id}"
-                ticker_resp = requests.get(ticker_url, timeout=10)
-                ticker_data = ticker_resp.json().get("data", {})
-                contract_id = alt_contract_id  # update to fallback symbol if found
-
-            if not ticker_data:
-                continue  # NO WARNING printed anymore!
-
-            funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{contract_id}", timeout=10)
+            funding_resp = requests.get(f"https://api-futures.kucoin.com/api/v1/funding-rate/{symbol}", timeout=10)
             funding_data = funding_resp.json().get("data", {})
 
             funding_rate_str = funding_data.get("value")
@@ -51,6 +30,8 @@ def quick_test():
                 funding_rate = float(funding_rate_str)
             except ValueError:
                 continue
+
+            print(f"[KUCOIN] {symbol} | Funding Rate: {funding_rate:.6f}")
 
             if funding_rate >= FUNDING_RATE_THRESHOLD:
                 results["KuCoin"] += 1
