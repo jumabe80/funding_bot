@@ -48,7 +48,7 @@ def get_okx_funding_rates():
                 "exchange": "OKX",
                 "symbol": inst_id,
                 "funding_rate": funding_rate,
-                "volume_24h": quote_volume,
+                "volume_24h": int(quote_volume),
                 "contract_type": "PERPETUAL",
                 "funding_countdown": minutes_until
             })
