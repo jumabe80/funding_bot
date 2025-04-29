@@ -1,57 +1,61 @@
-# kucoin_funding_bot.py
+# kucoin_funding_bot.py (FIXED)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_kucoin_funding_rates():
-    url_base = "https://api-futures.kucoin.com"
-
+    url = "https://api-futures.kucoin.com/api/v1/contracts/active"
     try:
-        market_response = requests.get(f"{url_base}/api/v1/contracts/active", timeout=10)
-        contracts = market_response.json().get("data", [])
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        contracts = response.json().get("data", [])
+        print(f"[KUCOIN] Contracts fetched: {len(contracts)}")
     except Exception as e:
-        print(f"[ERROR KuCoin] Failed to fetch contracts: {e}")
+        print(f"[KUCOIN ERROR] Failed to fetch contracts: {e}")
         return []
 
     results = []
+    now_ms = int(time.time() * 1000)
+
     for contract in contracts:
-        symbol = contract.get("symbol")
-        if not symbol:
-            continue
-
         try:
-            ticker_resp = requests.get(f"{url_base}/api/v1/contract/market/ticker?symbol={symbol}", timeout=10)
-            ticker_data = ticker_resp.json().get("data", {})
-            quote_volume = float(ticker_data.get("turnoverOf24h", 0))
-        except Exception as e:
-            print(f"[ERROR KuCoin] Ticker issue for {symbol}: {e}")
-            continue
-
-        if quote_volume < VOLUME_24H_THRESHOLD:
-            continue
-
-        try:
-            funding_resp = requests.get(f"{url_base}/api/v1/funding-rate/{symbol}", timeout=10)
-            funding_data = funding_resp.json().get("data", {})
-            funding_rate_str = funding_data.get("value")
-            if funding_rate_str in [None, ""]:
+            symbol = contract.get("symbol")
+            if not symbol:
                 continue
-            funding_rate = float(funding_rate_str)
+
+            funding_rate = contract.get("fundingFeeRate")
+            volume = contract.get("volumeOf24h")
+            mark_price = contract.get("markPrice")
+            next_funding_ts = contract.get("nextFundingRateTime")
+            open_interest = contract.get("openInterest")
+
+            if None in (funding_rate, volume, next_funding_ts):
+                continue
+
+            try:
+                funding_rate = float(funding_rate)
+                volume = float(volume)
+                mark_price = float(mark_price)
+                next_funding_ts = int(next_funding_ts)
+                open_interest = int(open_interest)
+            except:
+                continue
+
+            time_to_funding_min = int((next_funding_ts - now_ms) / 60000)
+
+            if funding_rate >= FUNDING_RATE_THRESHOLD and volume >= VOLUME_24H_THRESHOLD:
+                results.append({
+                    "exchange": "KuCoin",
+                    "symbol": symbol.replace("USDTM", "-USDT-PERP"),
+                    "funding_rate": funding_rate,
+                    "volume_24h": volume * mark_price,
+                    "timestamp": now_ms,
+                    "contract_type": "PERPETUAL",
+                    "time_to_funding_min": time_to_funding_min
+                })
         except Exception as e:
-            print(f"[ERROR KuCoin] Funding rate issue for {symbol}: {e}")
+            print(f"[KUCOIN WARNING] Error parsing contract {symbol}: {e}")
             continue
-
-        if funding_rate >= FUNDING_RATE_THRESHOLD:
-            results.append({
-                "exchange": "KuCoin",
-                "symbol": symbol,
-                "funding_rate": funding_rate,
-                "volume_24h": quote_volume,
-                "contract_type": "PERPETUAL",  # Assuming KuCoin only offers perpetuals on this endpoint
-                "funding_time_min": 480  # KuCoin funds every 8 hours
-            })
-
-        time.sleep(0.1)
 
     print(f"[KuCoin] Filtered pairs: {len(results)}")
     return results
