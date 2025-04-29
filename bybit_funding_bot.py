@@ -45,7 +45,7 @@ def get_bybit_funding_rates():
                 "exchange": "Bybit",
                 "symbol": symbol,
                 "funding_rate": funding_rate,
-                "volume_24h": turnover,
+                "volume_24h": int(turnover),
                 "contract_type": "PERPETUAL",
                 "funding_countdown": minutes_until
             })
