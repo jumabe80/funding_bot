@@ -9,6 +9,7 @@ def get_kucoin_funding_rates():
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         contracts = response.json().get("data", [])
+        print(f"[KUCOIN] Contracts fetched: {len(contracts)}")
     except Exception as e:
         print(f"[KUCOIN ERROR] Failed to fetch contracts: {e}")
         return []
@@ -40,7 +41,7 @@ def get_kucoin_funding_rates():
             except:
                 continue
 
-            time_to_funding_min = int((next_funding_ts - now_ms) / 60000)
+            funding_countdown = int((next_funding_ts - now_ms) / 60000)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume >= VOLUME_24H_THRESHOLD:
                 results.append({
@@ -50,10 +51,11 @@ def get_kucoin_funding_rates():
                     "volume_24h": volume * mark_price,
                     "timestamp": now_ms,
                     "contract_type": "PERPETUAL",
-                    "time_to_funding_min": time_to_funding_min
+                    "funding_countdown": funding_countdown
                 })
         except Exception as e:
             print(f"[KUCOIN WARNING] Error parsing contract {symbol}: {e}")
             continue
 
+    print(f"[KuCoin] Filtered pairs: {len(results)}")
     return results
