@@ -9,7 +9,6 @@ def get_kucoin_funding_rates():
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         contracts = response.json().get("data", [])
-        print(f"[KUCOIN] Contracts fetched: {len(contracts)}")
     except Exception as e:
         print(f"[KUCOIN ERROR] Failed to fetch contracts: {e}")
         return []
