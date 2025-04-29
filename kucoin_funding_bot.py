@@ -41,7 +41,12 @@ def get_kucoin_funding_rates():
             except:
                 continue
 
-            funding_countdown = int((next_funding_ts - now_ms) / 60000)
+            # KuCoin sends nextFundingRateTime as a relative countdown in milliseconds
+            # If it looks too small, assume it's already relative
+            if next_funding_ts > now_ms:
+                funding_countdown = int((next_funding_ts - now_ms) / 60000)
+            else:
+                funding_countdown = int(next_funding_ts / 60000)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume >= VOLUME_24H_THRESHOLD:
                 results.append({
