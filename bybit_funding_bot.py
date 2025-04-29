@@ -51,6 +51,4 @@ def get_bybit_funding_rates():
             })
 
         time.sleep(0.25)
-
-    print(f"[Bybit] Pares filtrados: {len(results)}")
     return results
