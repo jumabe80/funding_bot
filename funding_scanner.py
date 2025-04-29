@@ -1,11 +1,11 @@
-# funding_scanner.py (UPDATED TO ADD KUCOIN)
+# funding_scanner.py (UPDATED TO ADD DERIBIT)
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
 from okx_funding_bot import get_okx_funding_rates
 from bitget_funding_bot import get_bitget_funding_rates
 from kucoin_funding_bot import get_kucoin_funding_rates
+from deribit_funding_bot import get_deribit_funding_rates
 from collections import defaultdict
-
 
 def main():
     print("=" * 30)
@@ -19,18 +19,21 @@ def main():
     okx_data = get_okx_funding_rates()
     bitget_data = get_bitget_funding_rates()
     kucoin_data = get_kucoin_funding_rates()
+    deribit_data = get_deribit_funding_rates()
 
     print(f"[Binance] Filtered pairs: {len(binance_data)}")
     print(f"[Bybit] Filtered pairs: {len(bybit_data)}")
     print(f"[OKX] Filtered pairs: {len(okx_data)}")
     print(f"[Bitget] Filtered pairs: {len(bitget_data)}")
     print(f"[KuCoin] Filtered pairs: {len(kucoin_data)}")
+    print(f"[Deribit] Filtered pairs: {len(deribit_data)}")
 
     all_results.extend(binance_data)
     all_results.extend(bybit_data)
     all_results.extend(okx_data)
     all_results.extend(bitget_data)
     all_results.extend(kucoin_data)
+    all_results.extend(deribit_data)
 
     if not all_results:
         print("NO PAIR FOUND")
