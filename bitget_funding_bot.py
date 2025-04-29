@@ -43,7 +43,7 @@ def get_bitget_funding_rates():
                 "exchange": "Bitget",
                 "symbol": symbol,
                 "funding_rate": funding_rate,
-                "volume_24h": volume_24h,
+                "volume_24h": int(volume_24h),
                 "contract_type": "PERPETUAL",
                 "funding_countdown": countdown_min
             })
