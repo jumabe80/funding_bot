@@ -52,7 +52,7 @@ def get_kucoin_funding_rates():
                     "exchange": "KuCoin",
                     "symbol": symbol.replace("USDTM", "-USDT-PERP"),
                     "funding_rate": funding_rate,
-                    "volume_24h": volume * mark_price,
+                    "volume_24h": int(volume * mark_price),
                     "timestamp": now_ms,
                     "contract_type": "PERPETUAL",
                     "funding_countdown": funding_countdown
