@@ -56,5 +56,4 @@ def get_kucoin_funding_rates():
             print(f"[KUCOIN WARNING] Error parsing contract {symbol}: {e}")
             continue
 
-    print(f"[KuCoin] Filtered pairs: {len(results)}")
     return results
