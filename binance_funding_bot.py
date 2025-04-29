@@ -47,7 +47,7 @@ def get_binance_funding_rates():
                 "exchange": "Binance",
                 "symbol": symbol,
                 "funding_rate": funding_rate,
-                "volume_24h": volume_24h,
+                "volume_24h": int(volume_24h),
                 "contract_type": "PERPETUAL",
                 "funding_countdown": minutes_until
             })
