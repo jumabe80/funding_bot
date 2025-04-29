@@ -51,6 +51,4 @@ def get_binance_funding_rates():
                 "contract_type": "PERPETUAL",
                 "funding_countdown": minutes_until
             })
-
-    print(f"[Binance] Filtered pairs: {len(results)}")
     return results
