@@ -4,7 +4,7 @@ import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 def get_deribit_funding_rates():
-    instruments_url = "https://www.deribit.com/api/v2/public/get_instruments?currency=USDT&kind=future"
+    instruments_url = "https://www.deribit.com/api/v2/public/get_instruments?kind=future"
     try:
         instruments_response = requests.get(instruments_url, timeout=10)
         instruments_response.raise_for_status()
