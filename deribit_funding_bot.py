@@ -36,7 +36,6 @@ def get_deribit_funding_rates():
             next_funding_ts = ticker_data.get("next_funding_time")
             open_interest = ticker_data.get("open_interest")
 
-            print(f"[DERIBIT DEBUG] {symbol} | Funding: {funding_rate} | Volume: {volume}")
 
             if None in (funding_rate, volume, mark_price, next_funding_ts):
                 continue
@@ -66,5 +65,4 @@ def get_deribit_funding_rates():
             print(f"[DERIBIT WARNING] Error parsing {symbol}: {e}")
             continue
 
-    print(f"[Deribit] Filtered pairs: {len(results)}")
     return results
