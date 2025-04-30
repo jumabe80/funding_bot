@@ -1,4 +1,4 @@
-# deribit_funding_bot.py (UPDATED)
+# deribit_funding_bot.py (UPDATED WITH DEBUG)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
@@ -35,6 +35,8 @@ def get_deribit_funding_rates():
             mark_price = ticker_data.get("mark_price")
             next_funding_ts = ticker_data.get("next_funding_time")
             open_interest = ticker_data.get("open_interest")
+
+            print(f"[DERIBIT DEBUG] {symbol} | Funding: {funding_rate} | Volume: {volume}")
 
             if None in (funding_rate, volume, mark_price, next_funding_ts):
                 continue
