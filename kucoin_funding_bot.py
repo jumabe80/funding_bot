@@ -1,7 +1,8 @@
-# kucoin_funding_bot.py (FIXED)
+# kucoin_funding_bot.py (FIXED VOLUME FILTER)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
+from notifier import send_whatsapp_message
 
 def get_kucoin_funding_rates():
     url = "https://api-futures.kucoin.com/api/v1/contracts/active"
@@ -23,42 +24,41 @@ def get_kucoin_funding_rates():
                 continue
 
             funding_rate = contract.get("fundingFeeRate")
-            volume = contract.get("volumeOf24h")
+            volume_base = contract.get("volumeOf24h")
             mark_price = contract.get("markPrice")
             next_funding_ts = contract.get("nextFundingRateTime")
             open_interest = contract.get("openInterest")
 
-            if None in (funding_rate, volume, next_funding_ts):
+            if None in (funding_rate, volume_base, mark_price, next_funding_ts):
                 continue
 
             try:
                 funding_rate = float(funding_rate)
-                volume = float(volume)
+                volume_base = float(volume_base)
                 mark_price = float(mark_price)
                 next_funding_ts = int(next_funding_ts)
                 open_interest = int(open_interest)
             except:
                 continue
 
-            # KuCoin sends nextFundingRateTime as a relative countdown in milliseconds
-            # If it looks too small, assume it's already relative
-            if next_funding_ts > now_ms:
-                funding_countdown = int((next_funding_ts - now_ms) / 60000)
-            else:
-                funding_countdown = int(next_funding_ts / 60000)
+            volume_usdt = volume_base * mark_price
 
-            if funding_rate >= FUNDING_RATE_THRESHOLD and volume >= VOLUME_24H_THRESHOLD:
+            time_to_funding_min = int((next_funding_ts - now_ms) / 60000)
+
+            if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
                     "exchange": "KuCoin",
                     "symbol": symbol.replace("USDTM", "-USDT-PERP"),
                     "funding_rate": funding_rate,
-                    "volume_24h": int(volume * mark_price),
+                    "volume_24h": round(volume_usdt),
                     "timestamp": now_ms,
                     "contract_type": "PERPETUAL",
-                    "funding_countdown": funding_countdown
+                    "funding_countdown": time_to_funding_min
                 })
         except Exception as e:
             print(f"[KUCOIN WARNING] Error parsing contract {symbol}: {e}")
             continue
 
+    print(f"[KuCoin] Filtered pairs: {len(results)}")
     return results
+
