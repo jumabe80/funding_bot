@@ -2,7 +2,7 @@
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
-from notifier import send_whatsapp_message
+#from notifier import send_whatsapp_message
 
 def get_kucoin_funding_rates():
     url = "https://api-futures.kucoin.com/api/v1/contracts/active"
