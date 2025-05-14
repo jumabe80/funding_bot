@@ -43,8 +43,9 @@ def get_kucoin_funding_rates():
 
             volume_usdt = volume_base * mark_price
 
-            # Calculate funding countdown in minutes (fixed)
-            time_to_funding_min = int((next_funding_ts - now_ms // 1000) / 60)
+            # Calculate funding countdown in minutes (fixed correctly)
+            time_to_funding_min = int((next_funding_ts - now_ms) / 60000)
+            time_to_funding_min = max(0, time_to_funding_min)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
