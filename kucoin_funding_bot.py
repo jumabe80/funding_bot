@@ -2,7 +2,7 @@
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
-#from notifier import send_whatsapp_message
+# from notifier import send_whatsapp_message
 
 def get_kucoin_funding_rates():
     url = "https://api-futures.kucoin.com/api/v1/contracts/active"
@@ -43,8 +43,8 @@ def get_kucoin_funding_rates():
 
             volume_usdt = volume_base * mark_price
 
-            # Calculate funding countdown in minutes (corrected)
-            time_to_funding_min = int((next_funding_ts - now_ms) / 60000)
+            # Calculate funding countdown in minutes (fixed)
+            time_to_funding_min = int((next_funding_ts - now_ms // 1000) / 60)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
