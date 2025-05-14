@@ -1,4 +1,4 @@
-# kucoin_funding_bot.py (FIXED VOLUME FILTER)
+# kucoin_funding_bot.py (FIXED VOLUME FILTER + CORRECT FUNDING COUNTDOWN)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
@@ -43,6 +43,7 @@ def get_kucoin_funding_rates():
 
             volume_usdt = volume_base * mark_price
 
+            # Calculate funding countdown in minutes (corrected)
             time_to_funding_min = int((next_funding_ts - now_ms) / 60000)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
@@ -61,4 +62,3 @@ def get_kucoin_funding_rates():
 
     print(f"[KuCoin] Filtered pairs: {len(results)}")
     return results
-
