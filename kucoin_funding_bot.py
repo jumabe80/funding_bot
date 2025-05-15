@@ -15,7 +15,7 @@ def get_kucoin_funding_rates():
         return []
 
     results = []
-    now_ms = int(time.time() * 1000)
+    now_sec = int(time.time())  # Current time in seconds
 
     for contract in contracts:
         try:
@@ -36,18 +36,14 @@ def get_kucoin_funding_rates():
                 funding_rate = float(funding_rate)
                 volume_base = float(volume_base)
                 mark_price = float(mark_price)
-                next_funding_ts = int(next_funding_ts)
+                next_funding_ts = int(next_funding_ts / 1000)  # Convert ms to sec
                 open_interest = int(open_interest)
             except:
                 continue
 
             volume_usdt = volume_base * mark_price
 
-            # Calculate funding countdown in minutes (fixed correctly)
-
-            next_funding_ts = int(contract.get("nextFundingRateTime") / 1000)
-            now_sec = int(time.time())
-
+            # Calculate funding countdown in minutes
             time_to_funding_min = int((next_funding_ts - now_sec) / 60)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
@@ -56,7 +52,7 @@ def get_kucoin_funding_rates():
                     "symbol": symbol.replace("USDTM", "-USDT-PERP"),
                     "funding_rate": funding_rate,
                     "volume_24h": round(volume_usdt),
-                    "timestamp": now_ms,
+                    "timestamp": now_sec,
                     "contract_type": "PERPETUAL",
                     "funding_countdown": time_to_funding_min
                 })
