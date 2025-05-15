@@ -46,7 +46,7 @@ def get_kucoin_funding_rates():
             # Calculate funding countdown in minutes (fixed correctly)
             now_sec = int(time.time())
            # time_to_funding_min = int((next_funding_ts - now_sec) / 60)
-             time_to_funding_min = int((next_funding_ts) / 60)
+             time_to_funding_min = int((next_funding_ts))
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
