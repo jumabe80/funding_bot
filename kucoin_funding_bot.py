@@ -36,7 +36,7 @@ def get_kucoin_funding_rates():
                 funding_rate = float(funding_rate)
                 volume_base = float(volume_base)
                 mark_price = float(mark_price)
-                next_funding_ts = int(next_funding_ts / 1000)  # Convert ms to sec
+                next_funding_ts = int(next_funding_ts)
                 open_interest = int(open_interest)
             except:
                 continue
