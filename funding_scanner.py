@@ -1,10 +1,11 @@
-# funding_scanner.py (UPDATED TO ADD DERIBIT)
+# funding_scanner.py (UPDATED TO ADD MEXC)
 from binance_funding_bot import get_binance_funding_rates
 from bybit_funding_bot import get_bybit_funding_rates
 from okx_funding_bot import get_okx_funding_rates
 from bitget_funding_bot import get_bitget_funding_rates
 from kucoin_funding_bot import get_kucoin_funding_rates
 from deribit_funding_bot import get_deribit_funding_rates
+from mexc_funding_bot import get_mexc_funding_rates
 from collections import defaultdict
 
 def main():
@@ -20,6 +21,7 @@ def main():
     bitget_data = get_bitget_funding_rates()
     kucoin_data = get_kucoin_funding_rates()
     deribit_data = get_deribit_funding_rates()
+    mexc_data = get_mexc_funding_rates()
 
     print(f"[Binance] Filtered pairs: {len(binance_data)}")
     print(f"[Bybit] Filtered pairs: {len(bybit_data)}")
@@ -27,6 +29,7 @@ def main():
     print(f"[Bitget] Filtered pairs: {len(bitget_data)}")
     print(f"[KuCoin] Filtered pairs: {len(kucoin_data)}")
     print(f"[Deribit] Filtered pairs: {len(deribit_data)}")
+    print(f"[MEXC] Filtered pairs: {len(mexc_data)}")
 
     all_results.extend(binance_data)
     all_results.extend(bybit_data)
@@ -34,6 +37,7 @@ def main():
     all_results.extend(bitget_data)
     all_results.extend(kucoin_data)
     all_results.extend(deribit_data)
+    all_results.extend(mexc_data)
 
     if not all_results:
         print("NO PAIR FOUND")
