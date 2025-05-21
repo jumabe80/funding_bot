@@ -30,20 +30,21 @@ def get_mexc_funding_rates():
             mark_price = float(ticker.get("lastPrice"))
             open_interest = float(ticker.get("holdVol"))
 
-            # Funding rate API (one-by-one)
+            time.sleep(0.3)  # prevent rate-limiting
+
             try:
-                funding_resp = requests.get(FUNDING_RATE_URL.format(symbol=symbol), timeout=5)
+                funding_resp = requests.get(FUNDING_RATE_URL.format(symbol=symbol), timeout=10)
                 funding_resp.raise_for_status()
                 funding_data = funding_resp.json().get("data", {})
                 funding_rate = float(funding_data.get("fundingRate", 0))
-                next_funding_time = int(funding_data.get("nextSettleTime", 0)) // 1000  # convert ms to s
+                next_funding_time = int(funding_data.get("nextSettleTime", 0)) // 1000
             except Exception as f_err:
                 print(f"[MEXC WARNING] No funding data for {symbol}, skipping. Error: {f_err}")
                 continue
 
             volume_usdt = volume * mark_price
             time_to_funding_min = int((next_funding_time - now_sec) / 60)
-            time_to_funding_min = abs(time_to_funding_min)
+            time_to_funding_min = max(0, time_to_funding_min)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
