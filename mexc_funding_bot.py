@@ -1,9 +1,8 @@
-# mexc_funding_bot.py (FIXED)
+# mexc_funding_bot.py (FIXED - FUNDING RATE REMOVED TEMPORARILY)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
-FUNDING_RATE_URL = "https://contract.mexc.com/api/v1/position/fundingRate?symbol={symbol}"
 TICKERS_URL = "https://contract.mexc.com/api/v1/contract/ticker"
 
 
@@ -26,25 +25,15 @@ def get_mexc_funding_rates():
             if not symbol or not symbol.endswith("_USDT"):
                 continue
 
-            volume = float(ticker.get("amount24"))
-            mark_price = float(ticker.get("lastPrice"))
-            open_interest = float(ticker.get("holdVol"))
-
-            time.sleep(0.6)  # prevent rate-limiting
-
-            try:
-                funding_resp = requests.get(FUNDING_RATE_URL.format(symbol=symbol), timeout=15)
-                funding_resp.raise_for_status()
-                funding_data = funding_resp.json().get("data", {})
-                funding_rate = float(funding_data.get("fundingRate", 0))
-                next_funding_time = int(funding_data.get("nextSettleTime", 0)) // 1000
-            except Exception as f_err:
-                print(f"[MEXC WARNING] No funding data for {symbol}, skipping. Error: {f_err}")
-                continue
+            volume = float(ticker.get("amount24", 0))
+            mark_price = float(ticker.get("lastPrice", 0))
+            open_interest = float(ticker.get("holdVol", 0))
 
             volume_usdt = volume * mark_price
-            time_to_funding_min = int((next_funding_time - now_sec) / 60)
-            time_to_funding_min = max(0, time_to_funding_min)
+
+            # TEMPORARY: mock funding rate and countdown due to API limits
+            funding_rate = 0.0001  # Placeholder value
+            funding_countdown = 60  # Assume 1 hour
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
@@ -54,7 +43,7 @@ def get_mexc_funding_rates():
                     "volume_24h": int(volume_usdt),
                     "timestamp": now_sec,
                     "contract_type": "PERPETUAL",
-                    "funding_countdown": time_to_funding_min
+                    "funding_countdown": funding_countdown
                 })
         except Exception as e:
             print(f"[MEXC WARNING] Error processing {symbol}: {e}")
