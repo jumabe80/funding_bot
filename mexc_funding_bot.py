@@ -12,7 +12,7 @@ def get_mexc_funding_rates():
     now_sec = int(time.time())
 
     try:
-        ticker_response = requests.get(TICKERS_URL, timeout=10)
+        ticker_response = requests.get(TICKERS_URL, timeout=15)
         ticker_response.raise_for_status()
         ticker_data = ticker_response.json().get("data", [])
         print(f"[MEXC] Contracts fetched: {len(ticker_data)}")
@@ -30,10 +30,10 @@ def get_mexc_funding_rates():
             mark_price = float(ticker.get("lastPrice"))
             open_interest = float(ticker.get("holdVol"))
 
-            time.sleep(0.3)  # prevent rate-limiting
+            time.sleep(0.6)  # prevent rate-limiting
 
             try:
-                funding_resp = requests.get(FUNDING_RATE_URL.format(symbol=symbol), timeout=10)
+                funding_resp = requests.get(FUNDING_RATE_URL.format(symbol=symbol), timeout=15)
                 funding_resp.raise_for_status()
                 funding_data = funding_resp.json().get("data", {})
                 funding_rate = float(funding_data.get("fundingRate", 0))
