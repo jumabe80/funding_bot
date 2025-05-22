@@ -1,10 +1,10 @@
-# mexc_funding_bot.py (FIXED - FUNDING RATE REMOVED TEMPORARILY)
+# mexc_funding_bot.py (UPDATED - FUNDING RATE FIXED)
 import requests
 import time
 from settings import FUNDING_RATE_THRESHOLD, VOLUME_24H_THRESHOLD
 
 TICKERS_URL = "https://contract.mexc.com/api/v1/contract/ticker"
-
+FUNDING_RATE_URL = "https://futures.mexc.com/api/v1/contract/funding_rate/{symbol}"
 
 def get_mexc_funding_rates():
     results = []
@@ -28,12 +28,15 @@ def get_mexc_funding_rates():
             volume = float(ticker.get("amount24", 0))
             mark_price = float(ticker.get("lastPrice", 0))
             open_interest = float(ticker.get("holdVol", 0))
-
             volume_usdt = volume * mark_price
 
-            # TEMPORARY: mock funding rate and countdown due to API limits
-            funding_rate = 0.0001  # Placeholder value
-            funding_countdown = 60  # Assume 1 hour
+            # ✅ NEW: Fetch real funding rate
+            funding_resp = requests.get(FUNDING_RATE_URL.format(symbol=symbol), timeout=10)
+            funding_resp.raise_for_status()
+            funding_data = funding_resp.json().get("data", {})
+            funding_rate = float(funding_data.get("fundingRate", 0))
+            next_funding_time = int(funding_data.get("nextSettleTime", 0)) // 1000
+            funding_countdown = max(0, next_funding_time - now_sec)
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
@@ -45,6 +48,7 @@ def get_mexc_funding_rates():
                     "contract_type": "PERPETUAL",
                     "funding_countdown": funding_countdown
                 })
+
         except Exception as e:
             print(f"[MEXC WARNING] Error processing {symbol}: {e}")
             continue
