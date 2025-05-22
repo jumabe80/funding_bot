@@ -36,7 +36,7 @@ def get_mexc_funding_rates():
             funding_data = funding_resp.json().get("data", {})
             funding_rate = float(funding_data.get("fundingRate", 0))
             next_funding_time = int(funding_data.get("nextSettleTime", 0)) // 1000
-            funding_countdown = max(0, next_funding_time - now_sec)
+            funding_countdown = max(0, (next_funding_time - now_sec) // 60)  # Convert to minutes
 
             if funding_rate >= FUNDING_RATE_THRESHOLD and volume_usdt >= VOLUME_24H_THRESHOLD:
                 results.append({
